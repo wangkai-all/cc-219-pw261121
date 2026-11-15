@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>订单交付能力 · 供需对照</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <h1>订单交付能力 · 供需对照</h1>
+    <span class="subtitle">本地演示工具 · 虚构数据 · 不连接真实 ERP，不下真实采购单</span>
+  </div>
+  <div class="controls">
+    <label>分配优先级
+      <select id="strategy">
+        <option value="dueDate">按交期优先</option>
+        <option value="priority">按订单优先级</option>
+        <option value="fifo">按下单先后</option>
+      </select>
+    </label>
+    <label class="toggle">
+      <input type="checkbox" id="includeUnconfirmed">
+      纳入未确认供给（情景）
+    </label>
+    <button id="resetBtn" class="btn ghost">重置数据</button>
+  </div>
+</header>
+
+<main>
+  <section id="kpis" class="kpi-row" aria-label="概览"></section>
+
+  <section class="panel">
+    <h2>供需对照 <span class="hint">按物料 × 日期 · 点击物料行展开供需对应关系</span></h2>
+    <div id="grid"></div>
+  </section>
+
+  <section class="panel">
+    <h2>订单承诺 <span class="hint">承诺日期 = 该单所用供给的最晚到货日</span></h2>
+    <form id="addOrder" class="order-form">
+      <input name="customer" placeholder="客户 / 备注" maxlength="40">
+      <select name="material" id="orderMaterial" required></select>
+      <input name="qty" type="number" min="1" step="1" placeholder="数量" required>
+      <input name="dueDate" type="date" required>
+      <select name="priority">
+        <option value="1">优先级 1（最高）</option>
+        <option value="2">优先级 2</option>
+        <option value="3" selected>优先级 3</option>
+        <option value="4">优先级 4</option>
+        <option value="5">优先级 5</option>
+      </select>
+      <button class="btn primary" type="submit">新增分析订单</button>
+    </form>
+    <div id="orders"></div>
+  </section>
+
+  <section class="panel">
+    <h2>供给清单 <span class="hint">取消 / 延迟后自动重新分配，并记录受影响订单</span></h2>
+    <div id="supplies"></div>
+  </section>
+
+  <div class="two-col">
+    <section class="panel">
+      <h2>影响分析 <span class="hint">最近一次调整前后对比</span></h2>
+      <div id="impact"></div>
+    </section>
+    <section class="panel">
+      <h2>情景比较 <span class="hint">确定可交付（仅确认供给） vs 纳入未确认供给</span></h2>
+      <div id="scenarioCompare"></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>调整记录</h2>
+    <div id="history"></div>
+  </section>
+</main>
+
+<footer>数据为虚构供应链示例：共享物料、部分到货、插单、替代料与尾差场景。</footer>
+<script src="app.js"></script>
+</body>
+</html>

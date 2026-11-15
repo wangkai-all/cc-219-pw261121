@@ -1,0 +1,58 @@
+'use strict';
+
+/**
+ * 虚构供应链数据集（仅用于本地演示，不对接任何真实 ERP）。
+ * 覆盖：共享物料争抢（MAT-A）、部分到货（PO-8802 拆两批）、插单（SO-2006）、
+ * 物料替代（MAT-B → MAT-C，比例 0.95，限生效期）、最小单位尾差（SO-2005）、
+ * 未确认供给情景（SUP-U1/U2）。
+ */
+function seed() {
+  return {
+    materials: [
+      { id: 'MAT-A', name: '主控芯片 MCU-32', unit: '个', lotSize: 50 },
+      { id: 'MAT-B', name: '锂电池组 48V', unit: '组', lotSize: 20 },
+      { id: 'MAT-C', name: '锂电池组 48V（兼容型）', unit: '组', lotSize: 20 },
+      { id: 'MAT-D', name: '铝合金外壳', unit: '件', lotSize: 100 },
+      { id: 'MAT-E', name: '显示模组 7寸', unit: '片', lotSize: 30 },
+    ],
+    supplies: [
+      { id: 'SUP-01', material: 'MAT-A', kind: 'onhand', ref: '现货库存', qty: 500, date: '2026-11-15', confirmed: true },
+      { id: 'SUP-02', material: 'MAT-A', kind: 'po', ref: 'PO-8801', qty: 1000, date: '2026-11-25', confirmed: true },
+      { id: 'SUP-03', material: 'MAT-A', kind: 'po', ref: 'PO-8802（首批·部分到货）', qty: 300, date: '2026-11-28', confirmed: true },
+      { id: 'SUP-04', material: 'MAT-A', kind: 'po', ref: 'PO-8802（尾批）', qty: 500, date: '2026-12-10', confirmed: true },
+      { id: 'SUP-05', material: 'MAT-D', kind: 'prod', ref: 'WO-1001', qty: 2000, date: '2026-11-20', confirmed: true },
+      { id: 'SUP-06', material: 'MAT-D', kind: 'prod', ref: 'WO-1002', qty: 1500, date: '2026-12-05', confirmed: true },
+      { id: 'SUP-07', material: 'MAT-B', kind: 'onhand', ref: '现货库存', qty: 300, date: '2026-11-15', confirmed: true },
+      { id: 'SUP-08', material: 'MAT-B', kind: 'po', ref: 'PO-8803', qty: 400, date: '2026-11-30', confirmed: true },
+      { id: 'SUP-09', material: 'MAT-C', kind: 'onhand', ref: '现货库存', qty: 200, date: '2026-11-18', confirmed: true },
+      { id: 'SUP-10', material: 'MAT-E', kind: 'po', ref: 'PO-8804', qty: 600, date: '2026-11-22', confirmed: true },
+      { id: 'SUP-11', material: 'MAT-E', kind: 'prod', ref: 'WO-1003', qty: 400, date: '2026-12-08', confirmed: true },
+      // 未确认供给 —— 仅作情景，不混入确定可交付量
+      { id: 'SUP-U1', material: 'MAT-A', kind: 'po', ref: 'RFQ-12（询价中·未确认）', qty: 2000, date: '2026-12-01', confirmed: false },
+      { id: 'SUP-U2', material: 'MAT-B', kind: 'po', ref: 'RFQ-13（询价中·未确认）', qty: 500, date: '2026-12-15', confirmed: false },
+    ],
+    demands: [
+      // 已有占用（已承诺订单，最先参与分配）
+      { id: 'D-1001', orderNo: 'SO-1001', customer: '华星电子', material: 'MAT-A', qty: 400, dueDate: '2026-11-20', priority: 2, locked: true, seq: 1 },
+      { id: 'D-1002', orderNo: 'SO-1002', customer: '北宸机械', material: 'MAT-D', qty: 1200, dueDate: '2026-11-25', priority: 2, locked: true, seq: 2 },
+      { id: 'D-1003', orderNo: 'SO-1003', customer: '绿源动力', material: 'MAT-B', qty: 260, dueDate: '2026-11-28', priority: 2, locked: true, seq: 3 },
+      { id: 'D-1004', orderNo: 'SO-1004', customer: '华星电子', material: 'MAT-E', qty: 480, dueDate: '2026-11-26', priority: 2, locked: true, seq: 4 },
+      // 新需求
+      { id: 'D-2001', orderNo: 'SO-2001', customer: '恒宇科技', material: 'MAT-A', qty: 600, dueDate: '2026-11-28', priority: 2, locked: false, seq: 5 },
+      { id: 'D-2002', orderNo: 'SO-2002', customer: '恒宇科技', material: 'MAT-A', qty: 700, dueDate: '2026-12-05', priority: 3, locked: false, seq: 6 },
+      { id: 'D-2003', orderNo: 'SO-2003', customer: '绿源动力', material: 'MAT-B', qty: 500, dueDate: '2026-12-03', priority: 2, locked: false, seq: 7 },
+      { id: 'D-2004', orderNo: 'SO-2004', customer: '北宸机械', material: 'MAT-D', qty: 900, dueDate: '2026-12-02', priority: 3, locked: false, seq: 8 },
+      { id: 'D-2005', orderNo: 'SO-2005', customer: '视界光电', material: 'MAT-E', qty: 355, dueDate: '2026-12-06', priority: 2, locked: false, seq: 9 },
+      // 插单：高优先级急单，与多单争抢共享物料 MAT-A
+      { id: 'D-2006', orderNo: 'SO-2006', customer: '飞驰汽车（插单）', material: 'MAT-A', qty: 300, dueDate: '2026-11-27', priority: 1, locked: false, seq: 10 },
+    ],
+    substitutions: [
+      { id: 'SUB-1', from: 'MAT-B', to: 'MAT-C', ratio: 0.95, fromDate: '2026-11-01', toDate: '2026-12-31', note: '1 组兼容型电池可替代 0.95 组 48V 电池，限 11–12 月' },
+    ],
+    settings: { strategy: 'dueDate', includeUnconfirmed: false },
+    nextSeq: 11,
+    history: [],
+  };
+}
+
+module.exports = { seed };

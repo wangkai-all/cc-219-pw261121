@@ -1,0 +1,11 @@
+{
+  "name": "pointwise-delivery",
+  "version": "0.1.0",
+  "private": true,
+  "description": "订单交付能力（ATP）供需对照本地工具 —— 虚构数据演示，不连接真实 ERP",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/engine.test.js"
+  }
+}
